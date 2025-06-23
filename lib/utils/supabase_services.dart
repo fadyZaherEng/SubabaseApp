@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseServices {
@@ -70,5 +71,105 @@ class SupabaseServices {
       onChangeStatus("Sign In Failed : $e", false);
       onSignInFailure("Sign In Failed : $e");
     }
+  }
+
+  // sign out
+  static Future<void> signOut() async {
+    await supabase.auth.signOut();
+  }
+
+  //make tasks table and columns in supabase (id, title, description, created_at, is_completed)
+  //insert data into tasks table
+  static Future<void> insertTask({
+    required String title,
+    required String description,
+    required bool isCompleted,
+    required void Function(String) onInsertSuccess,
+    required void Function(String) onInsertFailure,
+    required void Function(String text, bool isLoading) onChangeStatus,
+  }) async {
+    try {
+      onChangeStatus("Inserting Task...", true);
+      final response = await supabase.from('tasks').insert({
+        'title': title,
+        'description': description,
+        'is_completed': isCompleted,
+      });
+
+      onChangeStatus("Task Inserted Successfully", false);
+      onInsertSuccess("Task Inserted Successfully");
+    } catch (e) {
+      debugPrint(e.toString());
+      onChangeStatus("Insert Task Failed : $e", false);
+      onInsertFailure("Insert Task Failed : $e");
+    }
+  }
+
+  //update data in tasks table
+  static Future<void> updateTask({
+    required int id,
+    required String title,
+    required String description,
+    required bool isCompleted,
+    required void Function(String) onUpdateSuccess,
+    required void Function(String) onUpdateFailure,
+    required void Function(String text, bool isLoading) onChangeStatus,
+  }) async {
+    try {
+      onChangeStatus("Updating Task...", true);
+      final response = await supabase.from('tasks').update({
+        'title': title,
+        'description': description,
+        'is_completed': isCompleted,
+      }).eq('id', id);
+      if (response.error == null) {
+        onChangeStatus("Task Updated Successfully", false);
+        onUpdateSuccess("Task Updated Successfully");
+      } else {
+        onChangeStatus("Something went wrong", false);
+        onUpdateFailure("Something went wrong");
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      onChangeStatus("Update Task Failed : $e", false);
+      onUpdateFailure("Update Task Failed : $e");
+    }
+  }
+
+  //delete data in tasks table
+  static Future<void> deleteTask({
+    required int id,
+    required void Function(String) onDeleteSuccess,
+    required void Function(String) onDeleteFailure,
+    required void Function(String text, bool isLoading) onChangeStatus,
+  }) async {
+    try {
+      onChangeStatus("Deleting Task...", true);
+      final response = await supabase.from('tasks').delete().eq('id', id);
+      if (response.error == null) {
+        onChangeStatus("Task Deleted Successfully", false);
+        onDeleteSuccess("Task Deleted Successfully");
+      } else {
+        onChangeStatus("Something went wrong", false);
+        onDeleteFailure("Something went wrong");
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      onChangeStatus("Delete Task Failed : $e", false);
+      onDeleteFailure("Delete Task Failed : $e");
+    }
+  }
+
+  // get all tasks
+  static Future<List<Map<String, dynamic>>> getTasks() async {
+    final response = await supabase.from('tasks').select();
+    return response;
+  }
+
+  // get task by id
+  static Future<Map<String, dynamic>?> getTaskById(int id) async {
+    final response =
+        await supabase.from('tasks').select().eq('id', id).single();
+    return response;
   }
 }
