@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_app/screens/home_screen.dart';
 import 'package:supabase_app/screens/sign_up_screen.dart';
 import 'package:supabase_app/utils/supabase_services.dart';
@@ -12,8 +12,8 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   String _errorMessage = '';
 
@@ -53,7 +53,10 @@ class _SignInScreenState extends State<SignInScreen> {
                         await SupabaseServices.signIn(
                           email: _emailController.text,
                           password: _passwordController.text,
-                          onSignInSuccess: (message) {
+                          onSignInSuccess: (message) async {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            prefs.setBool('isRemember', true);
                             setState(() {
                               _isLoading = false;
                               _errorMessage = message;

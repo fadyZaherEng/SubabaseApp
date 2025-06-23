@@ -78,7 +78,8 @@ class SupabaseServices {
     await supabase.auth.signOut();
   }
 
-  //make tasks table and columns in supabase (id, title, description, created_at, is_completed)
+  ///make tasks table and columns in supabase (id, title, description, created_at, is_completed)
+  ///CRUD operations
   //insert data into tasks table
   static Future<void> insertTask({
     required String title,
