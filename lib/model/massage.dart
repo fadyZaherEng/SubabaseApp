@@ -1,6 +1,6 @@
 class Massage {
   final String message;
-  final String id;
+  final int? id;
   final String senderId;
   final String senderEmail;
   final String receiverId;
@@ -11,7 +11,7 @@ class Massage {
 
   Massage({
     required this.message,
-    required this.id,
+    this.id,
     required this.senderId,
     required this.senderEmail,
     required this.receiverId,
@@ -40,12 +40,10 @@ class Massage {
   Map<String, dynamic> toJson() {
     return {
       'message': message,
-      'id': id,
       'sender_id': senderId,
       'sender_email': senderEmail,
       'receiver_id': receiverId,
       'receiver_email': receiverEmail,
-      'created_at': createdAt,
       'is_mine': isMine,
       'is_read': isRead,
     };

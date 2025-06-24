@@ -301,7 +301,6 @@ class SupabaseServices {
     Massage message = Massage(
       senderId: getCurrentUserId() ?? "",
       message: content,
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
       isRead: true,
       senderEmail: senderEmail,
       receiverEmail: receiverEmail,
@@ -310,29 +309,20 @@ class SupabaseServices {
     );
     try {
       onChangeStatus("Sending message...", true);
-      final response = await supabase.from('messages').insert(
-            message.toJson(),
-          );
-      if (response.error == null) {
-        onChangeStatus("Message sent successfully", false);
-        onMessageSent("Message sent successfully");
-      } else {
-        onChangeStatus("Something went wrong", false);
-        onMessageFailed("Something went wrong");
-      }
+      await supabase.from('massages').insert(message.toJson());
+      onChangeStatus("Message sent successfully", false);
+      onMessageSent("Message sent successfully");
     } catch (e) {
       debugPrint(e.toString());
       onChangeStatus("Send message failed : $e", false);
       onMessageFailed("Send message failed : $e");
     }
   }
-
   ///get messages
-
   static Stream<List<Massage>> getMessages() {
     return supabase
-        .from('messages')
-        .stream(primaryKey: ['id'])
+        .from('massages')
+        .stream(primaryKey: ['userId'])
         .order('created_at', ascending: false)
         .map((maps) => maps.map((map) => Massage.fromJson(map)).toList());
   }
