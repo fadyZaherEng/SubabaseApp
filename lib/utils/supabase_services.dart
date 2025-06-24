@@ -188,6 +188,7 @@ class SupabaseServices {
 
       final user = supabase.auth.currentUser;
       if (user == null) {
+        onChangeStatus("User is not authenticated", false);
         throw Exception("User is not authenticated");
       }
 
@@ -215,6 +216,18 @@ class SupabaseServices {
       // if (existingFiles.isNotEmpty) {
       //   await supabase.storage.from('files').remove(existingFile.map((e) => e.name).toList());
       // }
+      ///TODO: TOAccess Privacy Storage run this sql  in sql editor of supabase
+      //-- Allow authenticated users to upload to storage
+      // create policy "Authenticated upload"
+      // on storage.objects
+      // for insert
+      // with check (auth.role() = 'authenticated');
+      //
+      // -- Optional: allow viewing files
+      // create policy "Authenticated read"
+      // on storage.objects
+      // for select
+      // using (auth.role() = 'authenticated');
       ///upload this
       await supabase.storage.from('files').updateBinary(
             uploadPath,

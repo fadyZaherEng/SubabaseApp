@@ -109,9 +109,9 @@ class _StorageScreenState extends State<StorageScreen> {
         );
       },
       onUploadFailure: (message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Upload failed: $message")),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text("Upload failed: $message")),
+        // );
       },
       onChangeStatus: (text, isLoading) {
         ScaffoldMessenger.of(context).showSnackBar(
