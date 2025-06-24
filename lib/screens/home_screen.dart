@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_app/model/task.dart';
 import 'package:supabase_app/screens/sign_in_screen.dart';
+import 'package:supabase_app/screens/storage_screen.dart';
 import 'package:supabase_app/utils/supabase_services.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -35,6 +36,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const SignInScreen(),
+                ),
+              );
+            },
+          ),
+          //storage button
+          IconButton(
+            icon: const Icon(Icons.storage, color: Colors.green),
+            onPressed: () async {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StorageScreen(),
                 ),
               );
             },

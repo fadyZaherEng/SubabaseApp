@@ -38,6 +38,11 @@ dependencies:
   supabase_flutter: ^2.9.1
   supabase: ^2.8.0
   shared_preferences: ^2.2.0
+  image_picker:
+  path:
+  path_provider:
+  permission_handler:
+  device_info_plus:
 
 dev_dependencies:
   flutter_test:

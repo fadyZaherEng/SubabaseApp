@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,6 +16,7 @@ class SupabaseServices {
     );
   }
 
+  ///auth functions
   //sign up
   static Future<void> signUp({
     required String email,
@@ -80,6 +83,8 @@ class SupabaseServices {
 
   ///make tasks table and columns in supabase (id, title, description, created_at, is_completed)
   ///CRUD operations
+  /// create, read, update, delete
+  /// DataBase functions
   //insert data into tasks table
   static Future<void> insertTask({
     required String title,
@@ -91,7 +96,7 @@ class SupabaseServices {
   }) async {
     try {
       onChangeStatus("Inserting Task...", true);
-      final response = await supabase.from('tasks').insert({
+      await supabase.from('tasks').insert({
         'title': title,
         'description': description,
         'is_completed': isCompleted,
@@ -163,14 +168,81 @@ class SupabaseServices {
 
   // get all tasks
   static Future<List<Map<String, dynamic>>> getTasks() async {
-    final response = await supabase.from('tasks').select();
-    return response;
+    return await supabase.from('tasks').select('*');
   }
 
   // get task by id
   static Future<Map<String, dynamic>?> getTaskById(int id) async {
-    final response =
-        await supabase.from('tasks').select().eq('id', id).single();
-    return response;
+    return await supabase.from('tasks').select().eq('id', id).single();
+  }
+
+  ///Storage services
+  // upload file to storage
+  static Future<void> uploadFile({
+    required File file,
+    required void Function(String) onUploadSuccess,
+    required void Function(String) onUploadFailure,
+    required void Function(String text, bool isLoading) onChangeStatus,
+  }) async {
+    try {
+      onChangeStatus("Uploading file...", true);
+
+      final user = supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception("User is not authenticated");
+      }
+
+      final fileName = file.uri.pathSegments.last;
+      final uploadPath = 'user_files/${user.id}/$fileName';
+
+      final response = await supabase.storage.from('files').upload(
+          uploadPath, file,
+          fileOptions: const FileOptions(upsert: true));
+
+      onChangeStatus("File uploaded successfully", false);
+      onUploadSuccess("File uploaded to: $uploadPath");
+    } catch (e) {
+      debugPrint("Upload failed: $e");
+      onChangeStatus("Upload failed: $e", false);
+      onUploadFailure("Upload failed: $e");
+    }
+  }
+
+  // download file from storage
+  static Future<void> downloadFile({
+    required String fileName,
+    required void Function(String) onDownloadSuccess,
+    required void Function(String) onDownloadFailure,
+    required void Function(String text, bool isLoading) onChangeStatus,
+  }) async {
+    try {
+      onChangeStatus("Downloading File...", true);
+      await supabase.storage.from('files').download(fileName);
+      onChangeStatus("File Downloaded Successfully", false);
+      onDownloadSuccess("File Downloaded Successfully");
+    } catch (e) {
+      debugPrint(e.toString());
+      onChangeStatus("Download File Failed : $e", false);
+      onDownloadFailure("Download File Failed : $e");
+    }
+  }
+
+  // delete file from storage
+  static Future<void> deleteFile({
+    required String fileName,
+    required void Function(String) onDeleteSuccess,
+    required void Function(String) onDeleteFailure,
+    required void Function(String text, bool isLoading) onChangeStatus,
+  }) async {
+    try {
+      onChangeStatus("Deleting File...", true);
+      await supabase.storage.from('files').remove([fileName]);
+      onChangeStatus("File Deleted Successfully", false);
+      onDeleteSuccess("File Deleted Successfully");
+    } catch (e) {
+      debugPrint(e.toString());
+      onChangeStatus("Delete File Failed : $e", false);
+      onDeleteFailure("Delete File Failed : $e");
+    }
   }
 }
