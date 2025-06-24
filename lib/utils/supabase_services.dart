@@ -282,7 +282,7 @@ class SupabaseServices {
   ///get all users
   static Future<List<UserModel>> getAllUsers() async {
     debugPrint("Getting all users...");
-    List<Map<String, dynamic>> users = await supabase.from('users').select('*');
+    List<Map<String, dynamic>> users = await supabase.from("users").select('*');
     debugPrint("Users: $users");
     return users.map((e) => UserModel.fromJson(e)).toList();
   }
