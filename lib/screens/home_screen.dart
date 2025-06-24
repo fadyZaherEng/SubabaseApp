@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_app/model/task.dart';
+import 'package:supabase_app/screens/chat_screen.dart';
 import 'package:supabase_app/screens/sign_in_screen.dart';
 import 'package:supabase_app/screens/storage_screen.dart';
+import 'package:supabase_app/screens/users_screen.dart';
 import 'package:supabase_app/utils/supabase_services.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,6 +50,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const StorageScreen(),
+                ),
+              );
+            },
+          ),
+          //chat
+          IconButton(
+            icon: const Icon(
+              Icons.chat,
+              color: Colors.green,
+            ),
+            onPressed: () async {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UsersScreen(),
                 ),
               );
             },

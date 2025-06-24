@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:supabase_app/model/massage.dart';
+import 'package:supabase_app/model/user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseServices {
@@ -63,6 +65,29 @@ class SupabaseServices {
         password: password,
       );
       if (response.session != null) {
+        ///check if user not exists then create user
+        UserModel user = UserModel(
+          userId: response.session!.user.id,
+          email: email,
+          password: password,
+        );
+        final userId = response.session!.user.id;
+
+        // Check if user already exists
+        final existing = await supabase
+            .from('users')
+            .select()
+            .eq('userId', userId)
+            .maybeSingle();
+
+        if (existing == null) {
+          // User not found → insert
+          await supabase.from('users').insert(user.toJson());
+          debugPrint("✅ User created.");
+        } else {
+          debugPrint("⚠️ User already exists.");
+        }
+
         onChangeStatus("Signed In Successfully", false);
         onSignInSuccess("Signed In Successfully");
       } else {
@@ -72,6 +97,7 @@ class SupabaseServices {
     } catch (e) {
       onChangeStatus("Sign In Failed : $e", false);
       onSignInFailure("Sign In Failed : $e");
+      debugPrint(e.toString());
     }
   }
 
@@ -245,5 +271,69 @@ class SupabaseServices {
       onChangeStatus("Upload failed: $e", false);
       onUploadFailure("Upload failed: $e");
     }
+  }
+
+  ///Chat services
+  //get current user id
+  static String? getCurrentUserId() {
+    return supabase.auth.currentUser?.id;
+  }
+
+  ///get all users
+  static Future<List<UserModel>> getAllUsers() async {
+    debugPrint("Getting all users...");
+    List<Map<String, dynamic>> users = await supabase.from('users').select('*');
+    debugPrint("Users: $users");
+    return users.map((e) => UserModel.fromJson(e)).toList();
+  }
+
+  //send message
+  static Future<void> sendMessage({
+    required String content,
+    required String receiverId,
+    required String receiverEmail,
+    required String senderEmail,
+    required String senderId,
+    required void Function(String) onMessageSent,
+    required void Function(String) onMessageFailed,
+    required void Function(String text, bool isLoading) onChangeStatus,
+  }) async {
+    Massage message = Massage(
+      senderId: getCurrentUserId() ?? "",
+      message: content,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      isRead: true,
+      senderEmail: senderEmail,
+      receiverEmail: receiverEmail,
+      receiverId: receiverId,
+      isMine: senderId == getCurrentUserId(),
+    );
+    try {
+      onChangeStatus("Sending message...", true);
+      final response = await supabase.from('messages').insert(
+            message.toJson(),
+          );
+      if (response.error == null) {
+        onChangeStatus("Message sent successfully", false);
+        onMessageSent("Message sent successfully");
+      } else {
+        onChangeStatus("Something went wrong", false);
+        onMessageFailed("Something went wrong");
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      onChangeStatus("Send message failed : $e", false);
+      onMessageFailed("Send message failed : $e");
+    }
+  }
+
+  ///get messages
+
+  static Stream<List<Massage>> getMessages() {
+    return supabase
+        .from('messages')
+        .stream(primaryKey: ['id'])
+        .order('created_at', ascending: false)
+        .map((maps) => maps.map((map) => Massage.fromJson(map)).toList());
   }
 }
