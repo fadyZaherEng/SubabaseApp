@@ -298,15 +298,21 @@ class SupabaseServices {
     required void Function(String) onMessageFailed,
     required void Function(String text, bool isLoading) onChangeStatus,
   }) async {
-    Massage message = Massage(
-      senderId: getCurrentUserId() ?? "",
+    final String currentUserId = getCurrentUserId() ?? "";
+
+    final Massage message = Massage(
+      senderId: currentUserId,
       message: content,
-      isRead: true,
+      isRead: false,
+      // Not read when sent
       senderEmail: senderEmail,
       receiverEmail: receiverEmail,
       receiverId: receiverId,
-      isMine: senderId == getCurrentUserId(),
+      isMine: senderId == currentUserId,
+      createdAt: DateTime.now().toIso8601String(),
+      chatId: generateChatId(currentUserId, receiverId),
     );
+
     try {
       onChangeStatus("Sending message...", true);
       await supabase.from('massages').insert(message.toJson());
@@ -318,15 +324,25 @@ class SupabaseServices {
       onMessageFailed("Send message failed : $e");
     }
   }
+
+  static String generateChatId(String user1, String user2) {
+    // Consistent order so sender/receiver order doesn't matter
+    final sorted = [user1, user2]..sort();
+    return '${sorted[0]}_${sorted[1]}';
+  }
+
+  //TODO: get messages by id and  send  message by id for receiver  and sender
+
   ///get messages
-  static Stream<List<Massage>> getMessages() {
+  static Stream<List<Massage>> getMessagesWithUser(String otherUserId) {
+    final String currentUserId = getCurrentUserId() ?? "";
+    final String chatId = generateChatId(currentUserId, otherUserId);
+
     return supabase
         .from('massages')
-        .stream(primaryKey: ['userId'])
+        .stream(primaryKey: ['id'])
+        .eq('chatId', chatId)
         .order('created_at', ascending: false)
         .map((maps) => maps.map((map) => Massage.fromJson(map)).toList());
   }
-  //TODO: get messages by id and  send  message by id for receiver  and sender
-  void getMessagesById() {}
-
 }

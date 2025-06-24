@@ -31,12 +31,9 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: StreamBuilder<List<Massage>>(
-              stream: SupabaseServices.getMessages(),
+              stream: SupabaseServices.getMessagesWithUser(widget.receiverId),
               builder: (context, snapshot) {
-                // if (snapshot.connectionState == ConnectionState.waiting) {
-                //   return const Center(child: CircularProgressIndicator());
-                // } else
-                  if (snapshot.hasError) {
+                if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text('No messages yet.'));

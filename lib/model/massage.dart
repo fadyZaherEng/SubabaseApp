@@ -8,6 +8,7 @@ class Massage {
   final String? createdAt;
   final bool isMine;
   final bool isRead;
+  final String chatId;
 
   Massage({
     required this.message,
@@ -19,6 +20,7 @@ class Massage {
     this.createdAt,
     required this.isMine,
     required this.isRead,
+    required this.chatId,
   });
 
   //from json
@@ -33,6 +35,7 @@ class Massage {
       createdAt: json['created_at'],
       isMine: json['is_mine'],
       isRead: json['is_read'],
+      chatId: json['chatId'],
     );
   }
 
@@ -46,6 +49,7 @@ class Massage {
       'receiver_email': receiverEmail,
       'is_mine': isMine,
       'is_read': isRead,
+      'chatId': chatId,
     };
   }
 }
