@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -179,7 +178,7 @@ class SupabaseServices {
   ///Storage services
   // upload file to storage
   static Future<void> uploadFile({
-    required File file,
+    required Uint8List file,
     required void Function(String) onUploadSuccess,
     required void Function(String) onUploadFailure,
     required void Function(String text, bool isLoading) onChangeStatus,
@@ -192,57 +191,46 @@ class SupabaseServices {
         throw Exception("User is not authenticated");
       }
 
-      final fileName = file.uri.pathSegments.last;
-      final uploadPath = 'user_files/${user.id}/$fileName';
+      final uploadPath =
+          'user_files/${user.id}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      final response = await supabase.storage.from('files').upload(
-          uploadPath, file,
-          fileOptions: const FileOptions(upsert: true));
+      ///get list of this path
+      // final existingFiles = await supabase.storage
+      //     .from('files')
+      //     .list(path: 'user_files/');
+      ///check if file already exists
+      // if (existingFiles.map((e) => e.name).contains(uploadPath)) {
+      //   onChangeStatus("File already exists", false);
+      //   onUploadFailure("File already exists");
+      //   return;
+      // }
+      ///Delete existing file
+      // if (existingFiles.isNotEmpty) {
+      //   await supabase.storage.from('files').remove(existingFiles.map((e) => e.name).toList());
+      // }
+      ///replace file if another file  in the same path
+      // final existingFile = await supabase.storage
+      //     .from('files')
+      //     .list(path: 'user_files/${user.id}/');
+      // if (existingFiles.isNotEmpty) {
+      //   await supabase.storage.from('files').remove(existingFile.map((e) => e.name).toList());
+      // }
+      ///upload this
+      await supabase.storage.from('files').updateBinary(
+            uploadPath,
+            file,
+          );
 
+      ///get Download url
+      final downloadUrl =
+          supabase.storage.from('files').getPublicUrl(uploadPath);
+      debugPrint("Download URL: $downloadUrl");
       onChangeStatus("File uploaded successfully", false);
       onUploadSuccess("File uploaded to: $uploadPath");
     } catch (e) {
       debugPrint("Upload failed: $e");
       onChangeStatus("Upload failed: $e", false);
       onUploadFailure("Upload failed: $e");
-    }
-  }
-
-  // download file from storage
-  static Future<void> downloadFile({
-    required String fileName,
-    required void Function(String) onDownloadSuccess,
-    required void Function(String) onDownloadFailure,
-    required void Function(String text, bool isLoading) onChangeStatus,
-  }) async {
-    try {
-      onChangeStatus("Downloading File...", true);
-      await supabase.storage.from('files').download(fileName);
-      onChangeStatus("File Downloaded Successfully", false);
-      onDownloadSuccess("File Downloaded Successfully");
-    } catch (e) {
-      debugPrint(e.toString());
-      onChangeStatus("Download File Failed : $e", false);
-      onDownloadFailure("Download File Failed : $e");
-    }
-  }
-
-  // delete file from storage
-  static Future<void> deleteFile({
-    required String fileName,
-    required void Function(String) onDeleteSuccess,
-    required void Function(String) onDeleteFailure,
-    required void Function(String text, bool isLoading) onChangeStatus,
-  }) async {
-    try {
-      onChangeStatus("Deleting File...", true);
-      await supabase.storage.from('files').remove([fileName]);
-      onChangeStatus("File Deleted Successfully", false);
-      onDeleteSuccess("File Deleted Successfully");
-    } catch (e) {
-      debugPrint(e.toString());
-      onChangeStatus("Delete File Failed : $e", false);
-      onDeleteFailure("Delete File Failed : $e");
     }
   }
 }

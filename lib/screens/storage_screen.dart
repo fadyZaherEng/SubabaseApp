@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -46,21 +47,6 @@ class _StorageScreenState extends State<StorageScreen> {
       ),
     );
   }
-
-  void _showUploadFileDialog(BuildContext context) async {
-    if (!await _checkAndRequestStoragePermission(context)) return;
-
-    final XFile? file = await _pickImageFromGallery();
-    if (file == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No file selected.")),
-      );
-      return;
-    }
-
-    _uploadFile(context, file);
-  }
-
   Future<bool> _checkAndRequestStoragePermission(BuildContext context) async {
     if (Platform.isAndroid) {
       // For Android 13+
@@ -93,16 +79,30 @@ class _StorageScreenState extends State<StorageScreen> {
     return false;
   }
 
+  void _showUploadFileDialog(BuildContext context) async {
+    if (!await _checkAndRequestStoragePermission(context)) return;
+
+    final XFile? file = await _pickImageFromGallery();
+    if (file == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No file selected.")),
+      );
+      return;
+    }
+
+    _uploadFile(context,await file.readAsBytes());
+  }
+
+
   Future<XFile?> _pickImageFromGallery() async {
     final picker = ImagePicker();
     return await picker.pickImage(source: ImageSource.gallery);
   }
 
-  void _uploadFile(BuildContext context, XFile file) {
-    final filePath = file.path;
+  void _uploadFile(BuildContext context, Uint8List file) {
 
     SupabaseServices.uploadFile(
-      file: File(filePath),
+      file: file,
       onUploadSuccess: (message) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Upload successful: $message")),
