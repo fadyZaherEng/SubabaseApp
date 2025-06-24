@@ -332,7 +332,8 @@ class SupabaseServices {
   }
 
   //TODO: get messages by id and  send  message by id for receiver  and sender
-
+  ///ابقا اجرب ال ريل داتا بيز يمكن فيها نظام ال اتشلديرنت وال
+  ///tree w children w parent as firebase realtime database
   ///get messages
   static Stream<List<Massage>> getMessagesWithUser(String otherUserId) {
     final String currentUserId = getCurrentUserId() ?? "";
