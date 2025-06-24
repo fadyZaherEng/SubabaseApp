@@ -326,4 +326,7 @@ class SupabaseServices {
         .order('created_at', ascending: false)
         .map((maps) => maps.map((map) => Massage.fromJson(map)).toList());
   }
+  //TODO: get messages by id and  send  message by id for receiver  and sender
+  void getMessagesById() {}
+
 }
